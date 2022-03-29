@@ -374,21 +374,23 @@
   <!-- Links -->
   <div *ngIf="mode == 'move'" class="col-12 row text-center">
     <div>Move the Box with its corners</div>
+    <!-- take numerical input with default 0.5 -->
+    <input (keypress)="numberOnly($event)" type="text" id="inp" #inp>
     <div class="col-6">
-      <div class="row col-12"><button (click)="decrease(1)" class="col-1">-</button><span class="text-center col-4">Edge 1</span><button (click)="increase(1)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(2)" class="col-1">-</button><span class="text-center col-4">Edge 2</span><button (click)="increase(2)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(3)" class="col-1">-</button><span class="text-center col-4">Edge 3</span><button (click)="increase(3)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(4)" class="col-1">-</button><span class="text-center col-4">Edge 4</span><button (click)="increase(4)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(5)" class="col-1">-</button><span class="text-center col-4">Edge 5</span><button (click)="increase(5)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(6)" class="col-1">-</button><span class="text-center col-4">Edge 6</span><button (click)="increase(6)" class="col-1">+</button></div>
-    </div>
+      <div class="row col-12"><button (click)="decrease(1)" class="col-1">-</button><span class="text-center col-4">FR</span><button (click)="increase(1)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(2)" class="col-1">-</button><span class="text-center col-4">FB</span><button (click)="increase(2)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(3)" class="col-1">-</button><span class="text-center col-4">FL</span><button (click)="increase(3)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(4)" class="col-1">-</button><span class="text-center col-4">FU</span><button (click)="increase(4)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(5)" class="col-1">-</button><span class="text-center col-4">ROT1</span><button (click)="increase(5)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(6)" class="col-1">-</button><span class="text-center col-4">ROT2</span><button (click)="increase(6)" class="col-1">+</button></div>
+     </div>
     <div class="col-6">
-      <div class="row col-12"><button (click)="decrease(7)" class="col-1">-</button><span class="text-center col-4">Edge 7</span><button (click)="increase(7)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(8)" class="col-1">-</button><span class="text-center col-4">Edge 8</span><button (click)="increase(8)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(9)" class="col-1">-</button><span class="text-center col-4">Edge 9</span><button (click)="increase(9)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(10)" class="col-1">-</button><span class="text-center col-4">Edge 10</span><button (click)="increase(10)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(11)" class="col-1">-</button><span class="text-center col-4">Edge 11</span><button (click)="increase(11)" class="col-1">+</button></div>
-      <div class="row col-12"><button (click)="decrease(12)" class="col-1">-</button><span class="text-center col-4">Edge 12</span><button (click)="increase(12)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(7)" class="col-1">-</button><span class="text-center col-4">ROT3</span><button (click)="increase(7)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(8)" class="col-1">-</button><span class="text-center col-4">ROT4</span><button (click)="increase(8)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(9)" class="col-1">-</button><span class="text-center col-4">RR</span><button (click)="increase(9)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(10)" class="col-1">-</button><span class="text-center col-4">RB</span><button (click)="increase(10)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(11)" class="col-1">-</button><span class="text-center col-4">RL</span><button (click)="increase(11)" class="col-1">+</button></div>
+      <div class="row col-12"><button (click)="decrease(12)" class="col-1">-</button><span class="text-center col-4">RU</span><button (click)="increase(12)" class="col-1">+</button></div>
     </div>
   </div>
 

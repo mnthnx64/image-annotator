@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import * as $ from 'jquery';
 import { BBox, Point } from './types';
 
@@ -19,7 +19,6 @@ export class AppComponent implements AfterViewInit {
   public selectedBBox!: BBox;
 
   constructor() { 
-    
   }
 
   ngAfterViewInit(): void {
@@ -42,8 +41,6 @@ export class AppComponent implements AfterViewInit {
           that.canvas.height = that.background.height;
           that.context.drawImage(that.background,0,0); 
         }
-        // .drawImage(e.target.result,0,0);   
-        // document.getElementById('imgf')?.setAttribute("src", e.target.result);
       };
       reader.readAsDataURL($event.target.files[0]);
     }
@@ -77,11 +74,6 @@ export class AppComponent implements AfterViewInit {
     document.getElementById('inputFile')?.click();
   }
 
-
-
-  handleBoxes(newBox: BBox){
-
-  }
 
   handleMouseMove(mouse: MouseEvent, cvs: HTMLCanvasElement){
     var x = (mouse.offsetX);
@@ -153,16 +145,41 @@ export class AppComponent implements AfterViewInit {
   }
 
   /**
+   * Handle number only input for moving pixel
+   * @param event any
+   * @returns 
+   */
+  numberOnly(event: any): boolean {
+    var charCode = (event.which) ? event.which : event.keyCode;
+    if (charCode != 46 && charCode > 31
+      && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Decrease the coordinate of the edge
    * @param index Index of the edge
    */
   decrease(index: number): void {
-    this.selectedBBox.moveEdge(index, -0.5);
+    var inp = document.getElementById("inp") as HTMLInputElement;
+    var val = inp.value;
+    if(val == "" || val == undefined){
+      val = "0.5"
+    }
+    this.selectedBBox.moveEdge(index, -parseFloat(val));
     this.draw3DBoxes();
   }
 
   increase(index: number){
-    this.selectedBBox.moveEdge(index, 0.5);
+    var inp = document.getElementById("inp") as HTMLInputElement; 
+    var val = inp.value;
+    if(val == "" || val == undefined){
+      val = "0.5"
+    }
+    this.selectedBBox.moveEdge(index, parseFloat(val));
     this.draw3DBoxes();
   }
 
@@ -170,7 +187,35 @@ export class AppComponent implements AfterViewInit {
   draw3DBoxes() {
     for(var i = 0; i < this.allBoxes.length; i++){
       var bbox: BBox = this.allBoxes[i];
+      this.context.clearRect(0,0,  this.canvas.width,  this.canvas.height);
+      this.context.drawImage(this.background, 0, 0)
+      this.context.beginPath();
+      this.context.fillStyle = "#FF000080";
+      this.context.moveTo(bbox.vertices[0].x, bbox.vertices[0].y);
+      this.context.lineTo(bbox.vertices[1].x, bbox.vertices[1].y);
+      this.context.lineTo(bbox.vertices[2].x, bbox.vertices[2].y);
+      this.context.lineTo(bbox.vertices[3].x, bbox.vertices[3].y);
+      this.context.lineTo(bbox.vertices[0].x, bbox.vertices[0].y);
+      this.context.fill();
+      this.context.lineTo(bbox.vertices[4].x, bbox.vertices[4].y);
+      this.context.lineTo(bbox.vertices[5].x, bbox.vertices[5].y);
+      this.context.lineTo(bbox.vertices[6].x, bbox.vertices[6].y);
+      this.context.lineTo(bbox.vertices[7].x, bbox.vertices[7].y);
+      this.context.lineTo(bbox.vertices[4].x, bbox.vertices[4].y);
       
+      this.context.moveTo(bbox.vertices[1].x, bbox.vertices[1].y);
+      this.context.lineTo(bbox.vertices[5].x, bbox.vertices[5].y);
+      
+      this.context.moveTo(bbox.vertices[2].x, bbox.vertices[2].y);
+      this.context.lineTo(bbox.vertices[6].x, bbox.vertices[6].y);
+
+      this.context.moveTo(bbox.vertices[3].x, bbox.vertices[3].y);
+      this.context.lineTo(bbox.vertices[7].x, bbox.vertices[7].y);
+      // this.context.closePath();
+      this.context.strokeStyle = 'yellow';
+      this.context.lineWidth = 2;
+      // this.context.fillRect(C1.x, C1.y, C3.x-C1.x, C3.y-C1.y);
+      this.context.stroke();
     }
   }
 
@@ -198,35 +243,9 @@ export class AppComponent implements AfterViewInit {
     var C7: Point = new Point(p2.x, p1.y+Math.abs(p1.y - p2.y)*3/4);
     var C8: Point = new Point(p2.x, p1.y)
 
-    ctx.beginPath();
-    ctx.fillStyle = "#FF000080";
-    ctx.moveTo(C1.x, C1.y);
-    ctx.lineTo(C2.x, C2.y);
-    ctx.lineTo(C3.x, C3.y);
-    ctx.lineTo(C4.x, C4.y);
-    ctx.lineTo(C1.x, C1.y);
-    ctx.fill();
-    ctx.lineTo(C5.x, C5.y);
-    ctx.lineTo(C6.x, C6.y);
-    ctx.lineTo(C7.x, C7.y);
-    ctx.lineTo(C8.x, C8.y);
-    ctx.lineTo(C5.x, C5.y);
-    
-    ctx.moveTo(C2.x, C2.y);
-    ctx.lineTo(C6.x, C6.y);
-    
-    ctx.moveTo(C3.x, C3.y);
-    ctx.lineTo(C7.x, C7.y);
-
-    ctx.moveTo(C4.x, C4.y);
-    ctx.lineTo(C8.x, C8.y);
-    // ctx.closePath();
-    ctx.strokeStyle = 'yellow';
-    ctx.lineWidth = 2;
-    // ctx.fillRect(C1.x, C1.y, C3.x-C1.x, C3.y-C1.y);
-    ctx.stroke();
     this.selectedBBox = new BBox([C1, C2, C3, C4, C5, C6, C7, C8]);
     this.allBoxes.push(this.selectedBBox);
+    this.draw3DBoxes();
     // bbox.boxes.push();
     // this.startPoint
     // bbox.cx = cx;

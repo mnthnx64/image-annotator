@@ -12,10 +12,10 @@ export class BBox {
         2: {vertices:[2, 3], offset: 'y'},
         3: {vertices:[3, 4], offset: 'x'},
         4: {vertices:[4, 1], offset: 'y'},
-        5: {vertices:[1, 5], offset: 'x'},
-        6: {vertices:[2, 6], offset: 'x'},
-        7: {vertices:[3, 7], offset: 'x'},
-        8: {vertices:[4, 8], offset: 'x'},
+        5: {vertices:[1, 5], offset: 'y'},
+        6: {vertices:[2, 6], offset: 'y'},
+        7: {vertices:[3, 7], offset: 'y'},
+        8: {vertices:[4, 8], offset: 'y'},
         9: {vertices:[5, 6], offset: 'x'},
         10:{vertices:[6, 7], offset: 'y'},
         11:{vertices:[7, 8], offset: 'x'},
@@ -29,13 +29,15 @@ export class BBox {
     moveEdge(edgeIdx: number, moveOffset: number): void {
         var vertexInfo = this.VERTEXMAP[edgeIdx];
         if(vertexInfo.offset == 'x'){
-            for(var i = 0; i < vertexInfo.vertices.length; i++){
-                this.vertices[i - 1].x += moveOffset;
+            var vertices = vertexInfo.vertices;
+            for(var i = 0; i < vertices.length; i++){
+                this.vertices[vertices[i] - 1].x += moveOffset;
             }
         }
         else{
-            for(var i = 0; i < vertexInfo.vertices.length; i++){
-                this.vertices[i - 1].y += moveOffset;
+            var vertices = vertexInfo.vertices;
+            for(var i = 0; i < vertices.length; i++){
+                this.vertices[vertices[i] - 1].y += moveOffset;
             }
         }
     }
