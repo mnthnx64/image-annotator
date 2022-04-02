@@ -22,8 +22,30 @@ export class BBox {
         12:{vertices:[8, 5], offset: 'y'},
     };
 
-    constructor(vertices: Array<Point>){
-        this.vertices = vertices;
+    constructor(vertices?: Array<Point>){
+        if (vertices == undefined){
+            this.vertices = new Array<Point>(8);
+        }
+        else{
+            this.vertices = vertices;
+        }
+    }
+
+    /**
+     * 
+     * @param vertex Vertex point
+     * @returns void if succesful
+     */
+    addVertex(vertex: Point): void{
+        if(this.vertices.length < 8){
+            this.vertices.push(vertex);
+            return;
+        }
+        throw Error;
+    }
+
+    addVertexAtIndex(vertex: Point, index: number): void {
+        this.vertices[index] = vertex;
     }
 
     moveEdge(edgeIdx: number, moveOffset: number): void {
@@ -40,6 +62,12 @@ export class BBox {
                 this.vertices[vertices[i] - 1].y += moveOffset;
             }
         }
+    }
+
+    rotate(axis: number, angle: number): void {
+        // for(var i = 0; i < this.vertices.length; i++){
+        //     this.vertices[i].x 
+        // }
     }
 }
 
