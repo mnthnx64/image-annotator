@@ -74,6 +74,14 @@ export class AppComponent implements AfterViewInit {
     document.getElementById('inputFile')?.click();
   }
 
+  newBox(){
+    if(this.mode !='move'){
+      return;
+    }
+    // Set mode to draw
+    this.mode = 'draw';
+  }
+
 
   handleMouseMove(mouse: MouseEvent, cvs: HTMLCanvasElement){
     var x = (mouse.offsetX);
@@ -91,10 +99,12 @@ export class AppComponent implements AfterViewInit {
       ctx.strokeStyle = 'yellow';
       ctx.lineWidth = 2;
       ctx.stroke();
+      ctx.closePath();
     }
     else if(this.mode == 'drawingRect'){
       ctx.clearRect(0,0,  cvs.width,  cvs.height);
       ctx.drawImage(this.background,0,0); 
+      this.draw3DBoxes();
       var lineEnd = this.selectedBBox.vertices[1];
       var offsetX = lineEnd.x - x;
       var offsetY = lineEnd.y - y;
@@ -102,31 +112,29 @@ export class AppComponent implements AfterViewInit {
       this.selectedBBox.addVertexAtIndex(hiddenPoint, 3);
       this.selectedBBox.addVertexAtIndex(new Point(x, y), 2);
       ctx.beginPath(); 
+      ctx.fillStyle = "#ffff0080";
+      ctx.lineWidth = 2;
       ctx.moveTo(this.selectedBBox.vertices[0].x, this.selectedBBox.vertices[0].y)
       for (var i = 1; i < 4; i++){
         ctx.lineTo(this.selectedBBox.vertices[i].x, this.selectedBBox.vertices[i].y)
+        if(i == 3){ ctx.strokeStyle = '#ffff00A0';  } else { ctx.strokeStyle = '#ffff00'; }
+        ctx.stroke();
       }
       ctx.lineTo(this.selectedBBox.vertices[0].x, this.selectedBBox.vertices[0].y);
-      ctx.strokeStyle = 'yellow';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ffff00A0';
       ctx.stroke();
+      ctx.fill();
+      
     }
     else if(this.mode == 'drawing3D'){
       var offsetY = this.selectedBBox.vertices[2].y - y;
       for(var i = 4; i <8; i++){
         this.selectedBBox.vertices[i].y = this.selectedBBox.vertices[i-4].y - offsetY;
       }
+      this.context.clearRect(0,0,  this.canvas.width,  this.canvas.height);
+      this.context.drawImage(this.background, 0, 0);
+      this.draw3DBoxes();
       this.draw3DBox(this.selectedBBox);
-      // var width = x-this.startPoint.x;
-      // var height = y-this.startPoint.y;`
-      // ctx.clearRect(0,0,  cvs.width,  cvs.height);`
-      // ctx.drawImage(this.background,0,0); `
-      // this.draw3DBoxes();`
-      // ctx.beginPath(); `
-      // ctx.rect(this.startPoint.x, this.startPoint.y, width, height);`
-      // ctx.strokeStyle = 'yellow';
-      // ctx.lineWidth = 2;
-      // ctx.stroke();
     }
 
   }
@@ -152,27 +160,10 @@ export class AppComponent implements AfterViewInit {
       this.mode = 'drawingRect';
       this.selectedBBox = new BBox();
       var lineEnd:Point = new Point(x, y);
-      this.selectedBBox.addVertexAtIndex(this.startPoint, 0);
+      this.selectedBBox.addVertexAtIndex(new Point(this.startPoint.x, this.startPoint.y), 0);
       this.selectedBBox.addVertexAtIndex(lineEnd, 1);
       this.selectedBBox.addVertexAtIndex(lineEnd, 3);
-      this.selectedBBox.addVertexAtIndex(this.startPoint, 4);
-      // if(this.startPoint.x > x){
-      //   if(this.startPoint.y < y){
-      //     var p1 = new Point(this.startPoint.x, y);
-      //     var p2 = new Point(x, this.startPoint.y);
-      //     this.draw3DBox(cvs, ctx, p2, p1);
-      //     return;
-      //   }
-      //   this.draw3DBox(cvs, ctx, new Point(x,y), this.startPoint);
-      //   return;
-      // }
-      // if(this.startPoint.y > y){
-      //   var p1 = new Point(this.startPoint.x, y);
-      //   var p2 = new Point(x, this.startPoint.y);
-      //   this.draw3DBox(cvs, ctx, p1, p2);
-      //   return;
-      // }
-      // this.draw3DBox(cvs, ctx, this.startPoint, new Point(x,y));
+      this.selectedBBox.addVertexAtIndex(new Point(this.startPoint.x, this.startPoint.y), 4);
     }
     else if(this.mode == 'drawingRect'){
       this.mode = 'drawing3D';
@@ -180,10 +171,16 @@ export class AppComponent implements AfterViewInit {
         var pt = new Point(this.selectedBBox.vertices[i-4].x, this.selectedBBox.vertices[i-4].y);
         this.selectedBBox.addVertexAtIndex(pt, i);
       }
+      this.context.clearRect(0,0,  this.canvas.width,  this.canvas.height);
+      this.context.drawImage(this.background, 0, 0);
+      this.draw3DBoxes();
       this.draw3DBox(this.selectedBBox);
     }
     else if(this.mode == 'drawing3D'){
       this.mode = 'move';
+      cvs.style.cursor = "default";
+      this.allBoxes.push(this.selectedBBox);
+      this.draw3DBoxes();
     }
   }
 
@@ -241,6 +238,8 @@ export class AppComponent implements AfterViewInit {
 
   
   draw3DBoxes() {
+    this.context.clearRect(0,0,  this.canvas.width,  this.canvas.height);
+    this.context.drawImage(this.background, 0, 0);
     for(var i = 0; i < this.allBoxes.length; i++){
       var bbox: BBox = this.allBoxes[i];
       this.draw3DBox(bbox);
@@ -258,28 +257,6 @@ export class AppComponent implements AfterViewInit {
    * @param p2 another corner point of 2D-BBox
    */
   draw3DBox(bbox: BBox){
-    // var cx: number = (p1.x + p2.x)/2,
-    // cy: number = (p1.y + p2.y)/2;
-    // ctx.clearRect(0,0,  cvs.width,  cvs.height);
-    // ctx.drawImage(this.background,0,0); 
-    // var C1: Point = new Point(p1.x, p1.y+Math.abs(p1.y - p2.y)/4);
-    // var C2: Point = new Point(p1.x, p2.y);
-    // var C3: Point = new Point(p1.x+Math.abs(p1.x - p2.x)*3/4, p2.y);
-    // var C4: Point = new Point(p1.x+Math.abs(p1.x - p2.x)*3/4, p1.y+Math.abs(p1.y - p2.y)/4);
-    // var C5: Point = new Point(p1.x+Math.abs(p1.x - p2.x)/4, p1.y);
-    // var C6: Point = new Point(p1.x+Math.abs(p1.x - p2.x)/4, p1.y+Math.abs(p1.y - p2.y)*3/4);
-    // var C7: Point = new Point(p2.x, p1.y+Math.abs(p1.y - p2.y)*3/4);
-    // var C8: Point = new Point(p2.x, p1.y)
-
-    // // this.selectedBBox = new BBox([C1, C2, C3, C4, C5, C6, C7, C8]);
-    // this.allBoxes.push(this.selectedBBox);
-    // this.draw3DBoxes();
-    // bbox.boxes.push();
-    // this.startPoint
-    // bbox.cx = cx;
-    // bbox.cy = cy;
-    this.context.clearRect(0,0,  this.canvas.width,  this.canvas.height);
-    this.context.drawImage(this.background, 0, 0)
     this.context.beginPath();
     this.context.fillStyle = "#FF000080";
     this.context.moveTo(bbox.vertices[0].x, bbox.vertices[0].y);
@@ -302,11 +279,10 @@ export class AppComponent implements AfterViewInit {
 
     this.context.moveTo(bbox.vertices[3].x, bbox.vertices[3].y);
     this.context.lineTo(bbox.vertices[7].x, bbox.vertices[7].y);
-    // this.context.closePath();
     this.context.strokeStyle = 'yellow';
     this.context.lineWidth = 2;
-    // this.context.fillRect(C1.x, C1.y, C3.x-C1.x, C3.y-C1.y);
     this.context.stroke();
+    this.context.closePath();
   }
 
 }
