@@ -1,0 +1,4 @@
+Place the code inside DETRAC-test-data folder.
+You will see two files, Insight-MVT_Annotation_Test folder and separatingimages.py
+Run the code.
+Code will create a new directory with 25th images of each folder from Insight-MVT_Annotation_Test to Sorted_images
