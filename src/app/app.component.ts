@@ -1,4 +1,5 @@
 import { AfterViewInit, Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import * as $ from 'jquery';
 import { BBox, Point } from './types';
 
@@ -16,7 +17,28 @@ export class AppComponent implements AfterViewInit {
   public bbox2d!: HTMLElement;
   public mode: 'draw' | 'drawingLine' | 'drawingRect' | 'drawing3D' | 'move' | 'rotate' | 'modify' = 'draw';
   public startPoint: Point = new Point(0, 0);
-  public selectedBBox!: BBox;
+  public selectedEdge = '1';
+  public edgePixelControl: FormControl = new FormControl();
+  public objects = [
+    {name: "Car", value:0},
+    {name: "Truck", value:1},
+    {name: "Bus", value:2},
+    {name: "Van", value:3},
+    {name: "Tram", value:4}
+  ];
+  public orientations = [
+    {name: "Face 1", value:0},
+    {name: "Face 2", value:1},
+    {name: "Face 3", value:2},
+    {name: "Face 4", value:3},
+    {name: "Face 5", value:4},
+    {name: "Face 6", value:5},
+    {name: "Face 7", value:6},
+    {name: "Face 8", value:7},
+  ];
+  public selectedBox: number = 0;
+  private selectedBBox!: BBox;
+  private drawnRectagle: {[key: string | number] : Point} = {};
 
   constructor() { 
   }
@@ -24,6 +46,19 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.canvas = document.getElementById("canvas1") as HTMLCanvasElement;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+  }
+
+  selectBox(index: number): void {
+    this.selectedBox = index;
+    this.draw3DBoxes();
+  }
+
+  deleteBox(index: number): void {
+    this.allBoxes.splice(index, 1);
+    if(this.selectedBox == index){
+      this.selectedBox = 0;
+    }
+    this.draw3DBoxes();
   }
 
   /**
@@ -153,7 +188,6 @@ export class AppComponent implements AfterViewInit {
       this.mode = 'drawingLine';
       this.startPoint.x = x;
       this.startPoint.y = y;
-
       cvs.style.cursor = "crosshair";
     }
     else if(this.mode == 'drawingLine'){
@@ -167,6 +201,7 @@ export class AppComponent implements AfterViewInit {
     }
     else if(this.mode == 'drawingRect'){
       this.mode = 'drawing3D';
+      this.selectedBBox.findClosest();
       for(var i = 4; i <8; i++){
         var pt = new Point(this.selectedBBox.vertices[i-4].x, this.selectedBBox.vertices[i-4].y);
         this.selectedBBox.addVertexAtIndex(pt, i);
@@ -180,6 +215,7 @@ export class AppComponent implements AfterViewInit {
       this.mode = 'move';
       cvs.style.cursor = "default";
       this.allBoxes.push(this.selectedBBox);
+      this.selectedBox = this.allBoxes.length - 1;
       this.draw3DBoxes();
     }
   }
@@ -189,7 +225,7 @@ export class AppComponent implements AfterViewInit {
    * @param event any
    * @returns 
    */
-  numberOnly(event: any): boolean {
+  numberOnly(event: any) {
     var charCode = (event.which) ? event.which : event.keyCode;
     if (charCode != 46 && charCode > 31
       && (charCode < 48 || charCode > 57)) {
@@ -201,39 +237,32 @@ export class AppComponent implements AfterViewInit {
 
   /**
    * Decrease the coordinate of the edge
-   * @param index Index of the edge
+   * @param direction of the move
    */
-  decrease(index: number): void {
+  decrease(direction: string): void {
+    var index = parseInt(this.selectedEdge);
     var inp = document.getElementById("inp") as HTMLInputElement;
     var val = inp.value;
     if(val == "" || val == undefined){
       val = "0.5"
     }
-    this.selectedBBox.moveEdge(index, -parseFloat(val));
+    this.selectedBBox.moveEdge(index, -parseFloat(val), direction);
     this.draw3DBoxes();
   }
 
   /**
    * Increase the coordinate of the edge
-   * @param index Index of the edge
+   * @param direction of the move
    */
-  increase(index: number){
+  increase(direction: string){
+    var index = parseInt(this.selectedEdge);
     var inp = document.getElementById("inp") as HTMLInputElement; 
     var val = inp.value;
     if(val == "" || val == undefined){
       val = "0.5"
     }
-    this.selectedBBox.moveEdge(index, parseFloat(val));
+    this.selectedBBox.moveEdge(index, parseFloat(val), direction);
     this.draw3DBoxes();
-  }
-
-  rotate(axis: number, direction: number){
-    var inp = document.getElementById("inp") as HTMLInputElement; 
-    var val = inp.value;
-    if(val == "" || val == undefined){
-      val = "0.5"
-    }
-    this.selectedBBox.rotate(axis, parseFloat(val)*direction);
   }
 
   
@@ -242,6 +271,7 @@ export class AppComponent implements AfterViewInit {
     this.context.drawImage(this.background, 0, 0);
     for(var i = 0; i < this.allBoxes.length; i++){
       var bbox: BBox = this.allBoxes[i];
+      i == this.selectedBox ? this.context.strokeStyle = 'yellow': this.context.strokeStyle = 'black';
       this.draw3DBox(bbox);
     }
   }
@@ -279,10 +309,70 @@ export class AppComponent implements AfterViewInit {
 
     this.context.moveTo(bbox.vertices[3].x, bbox.vertices[3].y);
     this.context.lineTo(bbox.vertices[7].x, bbox.vertices[7].y);
-    this.context.strokeStyle = 'yellow';
+    
     this.context.lineWidth = 2;
     this.context.stroke();
     this.context.closePath();
   }
 
+
+  /** Function exported that exports the content of allboxes into a CSV and downloads the file */
+  exportCSV(){
+    var csvContent = "data:text/csv;charset=utf-8,";
+    var data = [];
+    var header = [];
+    header.push("class");
+    header.push("orientation");
+    header.push("x0");
+    header.push("y0");
+    header.push("x1");
+    header.push("y1");
+    header.push("x2");
+    header.push("y2");
+    header.push("x3");
+    header.push("y3");
+    header.push("x4");
+    header.push("y4");
+    header.push("x5");
+    header.push("y5");
+    header.push("x6");
+    header.push("y6");
+    header.push("x7");
+    header.push("y7");
+    data.push(header);
+    for(var i = 0; i < this.allBoxes.length; i++){
+      var bbox = this.allBoxes[i];
+      var row = [];
+      row.push(bbox.objClass);
+      row.push(bbox.orientation);
+      row.push(bbox.vertices[0].x);
+      row.push(bbox.vertices[0].y);
+      row.push(bbox.vertices[1].x);
+      row.push(bbox.vertices[1].y);
+      row.push(bbox.vertices[2].x);
+      row.push(bbox.vertices[2].y);
+      row.push(bbox.vertices[3].x);
+      row.push(bbox.vertices[3].y);
+      row.push(bbox.vertices[4].x);
+      row.push(bbox.vertices[4].y);
+      row.push(bbox.vertices[5].x);
+      row.push(bbox.vertices[5].y);
+      row.push(bbox.vertices[6].x);
+      row.push(bbox.vertices[6].y);
+      row.push(bbox.vertices[7].x);
+      row.push(bbox.vertices[7].y);
+      data.push(row);
+    }
+    data.forEach(function(infoArray, index){
+      var dataString = infoArray.join(",");
+      csvContent += index < data.length ? dataString+ "\n" : dataString;
+    });
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "my_data.csv");
+    document.body.appendChild(link); // Required for FF
+    link.click();
+    document.body.removeChild(link);
+  }
 }
