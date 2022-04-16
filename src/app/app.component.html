@@ -374,6 +374,8 @@
 
 <button (click)="exportCSV()" [hidden]="allBoxes.length == 0" style="height:40px; margin:0 10px;" mat-raised-button color="primary">Export to CSV</button>
 
+<input type="file" style="display: none;" name="file" id="csvFile" (change)="importCSV($event)" />
+<button style="height:40px; margin:0 10px;" mat-raised-button color="primary" (click)="importCSV1()">Import CSV</button>
 
 <footer style="justify-content:center; margin-bottom: 2rem;">
       Found the tool useful?&nbsp;
