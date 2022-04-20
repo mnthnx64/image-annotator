@@ -76,6 +76,7 @@ export class AppComponent implements AfterViewInit {
           that.canvas.width = that.background.width;
           that.canvas.height = that.background.height;
           that.context.drawImage(that.background, 0, 0);
+          that.allBoxes = [];
         }
       };
       reader.readAsDataURL($event.target.files[0]);
